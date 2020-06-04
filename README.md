@@ -3,8 +3,8 @@
 This program can generate registration codes for the Deluxe LORD Editor
 (DLE), a 16-bit DOS program I wrote in 1995.
 
-The Deluxe LORD Editor is a tool useful for SysOps running LORD, or
-Legend of the Red Dragon, on their BBS's. It's an editor and management
+The Deluxe LORD Editor is a tool useful for SysOps running LORD
+(Legend of the Red Dragon) on their BBS'. It's an editor and management
 tool all-in-one, with several modules:
 
 * Player data editor
@@ -14,7 +14,7 @@ tool all-in-one, with several modules:
 
 With these tools you can punish and reward your players, either by
 editing their stats directly, or sending them specially-coded mail bombs
-that granted them gold or whatever. The Player Editor included an action
+that granted them gold or whatever. The Player Editor includes an action
 to "reset" a player so it was as if a day had passed and they could play
 another set of turns. Very handy for a SysOp.
 
@@ -109,3 +109,48 @@ Instead, I set a variable to a magic value:
 * The registered, or "true" state of this variable is 0xE70D9.
 
 I do not know the significance of these numbers, if any.
+
+## Learnings
+
+Going in I had only written or even debugged a minimal amount of
+assembly, and everything I had written was usually just little snippets
+inlined next to C or Pascal for executing a specific interrupt or
+something like that.
+
+That much was quite educational! I'd highly recommend anyone getting
+into assembly to start at an earlier level of technology: code for a
+16-bit 286 in real mode with 640kb of RAM.
+
+It's one thing to step through existing code and make sense of it (with
+the Intel x86 Architecture Guide in hand), and another thing entirely to
+write code that executes. I'm still very much learning how to write NASM
+code, and most of what I've written just looks like the machine code I
+was stepping through.
+
+For kicks, I compiled the REGCODE program with 16-bit NASM for DOS. It
+produced identical output using the 64-bit NASM for Win32 but it just
+felt more correct to compile it in the same context that the program
+would run in.
+
+## Future Work
+
+Right now the only way to get a reg key out of this thing is to open it
+in the DOSbox debugger, set a breakpoint on the return from `start`, and
+copy the data from the memory display. That data will still be in byte
+form (i.e. `0x34 0x57 0xA5 0x18 0x83`) so it needs to be written down by
+hand in string form (`"3457A51883"`).
+
+So, next steps might be to do that string conversion and print it out,
+and maybe read the SysOp/BBS name from the console or DLE.CFG.
+
+It could also write the codes directly into DLE.CFG.
+
+As I pour more code into it -- I/O, screen printing, other things -- I'd
+like to organize the code into more files and thus might look into
+targeting an EXE instead. I've read that it _can_ be done by hand-coding
+the EXE header in the .data section but it makes more sense to me to
+just generate a Makefile and link it with GCC or something like that. I
+would like to find a linker that generates original DOS headers though.
+DLE.EXE's metadata header is just 28 bytes followed by a rather large
+(relatively speaking) relocation table. Modern linkers, I think, are
+more likely to generate larger headers and I'd like to avoid that.

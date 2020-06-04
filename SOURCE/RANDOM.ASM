@@ -43,10 +43,10 @@ rng_next_int:
     call    rng_next_seed
 
     mov     cx,dx
-    mul     word [bp+2]
+    mul     word [bp+4]
     mov     ax,cx
     mov     cx,dx
-    mul     word [bp+2]
+    mul     word [bp+4]
     add     ax,cx
     adc     dx,0
     mov     ax,dx

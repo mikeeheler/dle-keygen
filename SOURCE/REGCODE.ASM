@@ -1,14 +1,14 @@
 bits    16                      ; Hell yeah, brutha!
 cpu     286                     ; Hell yeah, brutha!
+global  _start
+org     0100h                   ; Tell NASM where COM code is loaded
 
-; This is necessary when using NASM's BIN format and compiling to a COM
-; file.
-org     0100h
 
 ; Entrypoint stub. This needs to be the first code in the file.
 section .text
 
-    call    start
+_start:
+    call    main
     mov     ax,4C00h
     int     21h
 
@@ -27,17 +27,13 @@ sysop_len   equ $-sysop
 
 section .bss
 
-count       resw    1
-index       resw    1
-tmp         resw    1
-
 bbs_key     resb    0100h
 sysop_key   resb    0100h
 
 
 section .text
 
-start:
+main:
     push    sysop_key
     push    sysop
     push    sysop_len
@@ -52,7 +48,7 @@ start:
 
 
 .gen_key:
-    enter   0,0
+    enter   10,0
 
     ; Seed the random number generator
     mov     ax,1935h
@@ -70,8 +66,8 @@ start:
 
     ; Initialize the counter
     mov     cx,[bp+4]
-    mov     [count],cx
-    mov     word [index],0
+    mov     [bp-2],cx
+    mov     word [bp-4],0
 
     ; Initialize the registers for lodsb/stosb
     mov     si,[bp+6]
@@ -79,24 +75,24 @@ start:
 
 .loop:
     ; Set the mask for the RNG. This causes it to return 0 <= N < 0xFF.
-    mov     ax,00ffh
+    mov     ax,00FFh
     push    ax
     call    rng_next_int
     ; Add 1 to the range to make the value in the range of 1-255.
     inc     ax
-    mov     [tmp],al
+    mov     [bp-6],al
 
     ; Read a byte from the source string
     lodsb
     ; XOR that byte with the byte we got from the RNG
-    xor     al,[tmp]
+    xor     al,[bx]
     ; Store that in the result
     stosb
 
     ; Loop boilerplate
-    inc     word [index]
-    mov     ax,[count]
-    cmp     ax,[index]
+    inc     word [bp-4]
+    mov     ax,[bp-4]
+    cmp     word ax,[bp-2]
     jne     .loop
 
     leave

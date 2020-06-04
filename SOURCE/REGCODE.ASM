@@ -48,52 +48,54 @@ main:
 
 
 .gen_key:
-    enter   10,0
+    ; Inputs:
+    ; bp+6 - input string
+    ; bp+4 - input string length
+    ;
+    ; Outputs:
+    ; bp+8 - output string
+    enter   0,0
 
     ; Seed the random number generator
     mov     ax,1935h
+    mov     dx,0
     push    ax
-    mov     ax,0
-    push    ax
+    push    dx
     call    rng_seed
 
-    ; zero out the memory where we're writing
-    ; the key, mostly for debugging.
+    ; zero out the memory where we're writing the key, mostly for
+    ; debugging.
     mov     di,[bp+8]
-    mov     al,0
-    mov     cx,0100h
-    rep     stosb
+    mov     ax,0
+    mov     cx,0080h
+    rep     stosw
 
-    ; Initialize the counter
+    ; loop init
     mov     cx,[bp+4]
-    mov     [bp-2],cx
-    mov     word [bp-4],0
-
-    ; Initialize the registers for lodsb/stosb
     mov     si,[bp+6]
     mov     di,[bp+8]
 
 .loop:
+    push    cx
+
     ; Set the mask for the RNG. This causes it to return 0 <= N < 0xFF.
     mov     ax,00FFh
     push    ax
     call    rng_next_int
     ; Add 1 to the range to make the value in the range of 1-255.
     inc     ax
-    mov     [bp-6],al
+    ; Store it in AH
+    mov     ah,al
 
     ; Read a byte from the source string
     lodsb
     ; XOR that byte with the byte we got from the RNG
-    xor     al,[bx]
+    xor     al,ah
     ; Store that in the result
     stosb
 
-    ; Loop boilerplate
-    inc     word [bp-4]
-    mov     ax,[bp-4]
-    cmp     word ax,[bp-2]
-    jne     .loop
+    pop     cx
+    loop    .loop
 
     leave
     retn    6

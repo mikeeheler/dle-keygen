@@ -1,5 +1,24 @@
+; These algorithms come from the code in DLE.EXE.
+;
+; I presume they were part of the Random module in Turbo Pascal, but I
+; am not sure.
+;
+; Of interest is that while this was built for 16-bit architecture, it
+; uses a 32-bit seed in the form of two 16-bit words. Or maybe TP had a
+; 32-bit int type and this is just what operations on that type compiled
+; down to.
+;
+; A key part of the algorithm seems to be the prime number 33,797
+; (0x8405).
+;
+; Also, and maybe this is the pattern with psuedo-random generators, but
+; it seems to function by mutating the seed and then the next_int
+; function just riffs on that a bit given its input mask.
+;
+
 section .text
 
+; Set a specific seed for the RNG
 rng_seed:
     mov     bx,sp
 
@@ -10,10 +29,12 @@ rng_seed:
 
     retn    4
 
-rng_next_byte:
+; 1 input param: upper bound
+; The returned value will be less than the number passed in.
+rng_next_int:
     enter   0,0
 
-    call    rng_next
+    call    rng_next_seed
 
     mov     cx,dx
     mul     word [bp+2]
@@ -21,15 +42,15 @@ rng_next_byte:
     mov     cx,dx
     mul     word [bp+2]
     add     ax,cx
-    adc     dx,0x0000
+    adc     dx,0
     mov     ax,dx
 
     leave
     retn    2
 
-; This here is why it's called a pseudo-random number
-; generator. There's nothing random about this at all.
-rng_next:
+; This here is why it's called a pseudo-random number generator.
+; There's nothing random about this at all.
+rng_next_seed:
     mov     ax,[rng_seed_1]
     mov     bx,[rng_seed_2]
     mov     cx,ax
@@ -58,4 +79,5 @@ rng_seed_2  resw    1
 
 section .data
 
-rng_const   equ     8405h
+; This is a prime number: 33,797
+rng_const   dw      8405h

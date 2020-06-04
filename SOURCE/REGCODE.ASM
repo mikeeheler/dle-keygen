@@ -1,7 +1,11 @@
-bits    16
-cpu     286
+bits    16                      ; Hell yeah, brutha!
+cpu     286                     ; Hell yeah, brutha!
+
+; This is necessary when using NASM's BIN format and compiling to a COM
+; file.
 org     0100h
 
+; Entrypoint stub. This needs to be the first code in the file.
 section .text
 
     call    start
@@ -17,10 +21,8 @@ section .data
 bbs         db  'BBS Name'
 bbs_len     equ $-bbs
 
-sysop       db  'Sysop Name'
+sysop       db  'SysOp Name'
 sysop_len   equ $-sysop
-
-hex         db  '0123456789ABCDEF'
 
 
 section .bss
@@ -59,33 +61,39 @@ start:
     push    ax
     call    rng_seed
 
-%ifdef DEBUG
     ; zero out the memory where we're writing
     ; the key, mostly for debugging.
     mov     di,[bp+8]
     mov     al,0
     mov     cx,0100h
     rep     stosb
-%endif
 
+    ; Initialize the counter
     mov     cx,[bp+4]
     mov     [count],cx
     mov     word [index],0
 
+    ; Initialize the registers for lodsb/stosb
     mov     si,[bp+6]
     mov     di,[bp+8]
 
 .loop:
+    ; Set the mask for the RNG. This causes it to return 0 <= N < 0xFF.
     mov     ax,00ffh
     push    ax
-    call    rng_next_byte
+    call    rng_next_int
+    ; Add 1 to the range to make the value in the range of 1-255.
     inc     ax
     mov     [tmp],al
 
+    ; Read a byte from the source string
     lodsb
+    ; XOR that byte with the byte we got from the RNG
     xor     al,[tmp]
+    ; Store that in the result
     stosb
 
+    ; Loop boilerplate
     inc     word [index]
     mov     ax,[count]
     cmp     ax,[index]

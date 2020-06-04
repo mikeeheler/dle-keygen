@@ -1,0 +1,2 @@
+*.asm   text working-tree-encoding=CP437
+*.bat   text working-tree-encoding=CP437

@@ -1,0 +1,1 @@
+NASM -fbin -O0 -g -o REGCODE.COM REGCODE.ASM

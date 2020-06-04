@@ -18,10 +18,11 @@ _start:
 
 section .data
 
-bbs         db  'BBS Name'
+; These are the default values from when DLE's SETUP.EXE is first run.
+bbs         db  'Even Cooler Bbs'
 bbs_len     equ $-bbs
 
-sysop       db  'SysOp Name'
+sysop       db  'Really Cool Sysop'
 sysop_len   equ $-sysop
 
 

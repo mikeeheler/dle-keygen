@@ -28,9 +28,9 @@ rng_seed:
     push    bp
     mov     bp,sp
 
-    mov     ax,[bp+4]
+    mov     ax,[bp+6]
     mov     [rng_seed_1],ax
-    mov     ax,[bp+2]
+    mov     ax,[bp+4]
     mov     [rng_seed_2],ax
 
     pop     bp

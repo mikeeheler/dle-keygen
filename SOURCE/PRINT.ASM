@@ -1,6 +1,10 @@
+ ; Just a few helper functions for printing text to the screen
+ ; print_string prints a '$'-terminated string to stdout
+ ; print_string_2 takes a string and a byte length and prints it to stdout
+ ; print_newline sends CRLF to the terminal
+
 section .text
 
-; Have DOS print a '$'-terminated string
 print_string:
     push    bp
     mov     bp,sp
@@ -14,31 +18,21 @@ print_string:
     ret
 
 
-; Print a certain number of bytes
 print_string_2:
     push    bp
     mov     bp,sp
-    sub     sp,0101h
-
-    push    di
     push    si
 
-    lea     dx,[bp-0101h]
-    mov     di,dx
     mov     si,[bp+6]
     mov     cx,[bp+4]
-    xor     ch,ch
-    rep     movsb
-    mov     al,024h
-    stosb
-
-    mov     ax,0900h
-    lea     dx,[bp-0101h]
+    mov     ah,06h
+.loop:
+    lodsb
+    mov     dl,al
     int     21h
+    loop    .loop
 
     pop     si
-    pop     di
-
     mov     sp,bp
     pop     bp
     ret

@@ -43,61 +43,54 @@ sysop_key   resb    0100h
 section .text
 
 main:
+    push    bp
+    mov     bp,sp
+
     push    sysop_key
     push    sysop
     push    sysop_len
     call    .gen_key
-    sub     sp,6
 
     push    bbs_key
     push    bbs
     push    bbs_len
     call    .gen_key
-    sub     sp,6
 
 
     push    sysop_name
     call    print_string
-    sub     sp,2
 
     push    sysop
     push    sysop_len
     call    print_string_2
-    sub     sp,4
-
     call    print_newline
 
 
     push    bbs_name
     call    print_string
-    sub     sp,2
 
     push    bbs
     push    bbs_len
     call    print_string_2
-    sub     sp,4
-
     call    print_newline
 
 
     push    reg1
     call    print_string
-    sub     sp,2
 
     push    sysop_key
     call    .print_key
-    sub     sp,2
     call    print_newline
 
     push    reg2
     call    print_string
-    sub     sp,2
 
     push    bbs_key
     call    .print_key
-    sub     sp,2
     call    print_newline
 
+    mov     sp,bp
+    pop     bp
     ret
 
 
@@ -107,10 +100,9 @@ main:
     ; bp+4 - input string length
     ;
     ; Outputs:
-    ; bp+8 - output key in binary (zero-terminated)
+    ; bp+8 - output key in binary
     push    bp
     mov     bp,sp
-    sub     sp,0100h
 
     ; Seed the random number generator
     mov     ax,1935h
@@ -118,7 +110,6 @@ main:
     push    ax
     push    dx
     call    rng_seed
-    sub     sp,4
 
     ; initialize the memory where we're writing the key, mostly for
     ; debugging.
@@ -141,7 +132,9 @@ main:
     mov     ax,00FFh
     push    ax
     call    rng_next_int
-    sub     sp,2
+    ; In a loop so restore the stack
+    add     sp,2
+
     ; Add 1 to the range to make the value in the range of 1-255.
     inc     ax
     ; Store it in AH
@@ -157,6 +150,7 @@ main:
     pop     cx
     loop    .loop
 
+    ; Store result length in first byte
     mov     ax,di
     mov     di,[bp+8]
     sub     ax,di
@@ -164,6 +158,7 @@ main:
     xor     ah,ah
     stosb
 
+    mov     sp,bp
     pop     bp
     ret
 
@@ -172,13 +167,15 @@ main:
     push    bp
     mov     bp,sp
 
+    mov     sp,bp
     pop     bp
-
+    ret
 
 
 .print_key:
     push    bp
     mov     bp,sp
 
+    mov     sp,bp
     pop     bp
     ret

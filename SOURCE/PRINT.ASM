@@ -4,7 +4,7 @@ print_string:
     mov     bx,sp
 
     mov     ax,0900h
-    mov     dx,[bx+4]
+    mov     dx,[bx+2]
     int     21h
 
     ret
@@ -13,8 +13,8 @@ print_string:
 print_string_2:
     mov     bx,sp
 
-    mov     cx,[bx+4]
-    mov     si,[bx+6]
+    mov     cx,[bx+2]
+    mov     si,[bx+4]
 
     mov     ah,02h
 

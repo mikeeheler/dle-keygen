@@ -42,7 +42,6 @@ rng_next_int:
     mov     bp,sp
 
     call    rng_next_seed
-
     mov     cx,dx
     mul     word [bp+4]
     mov     ax,cx
@@ -52,6 +51,7 @@ rng_next_int:
     adc     dx,0
     mov     ax,dx
 
+    mov     sp,bp
     pop     bp
     ret
 

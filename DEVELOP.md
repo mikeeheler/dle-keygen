@@ -2,14 +2,45 @@
 
 This document is just a place to keep notes on working on this thing.
 
+## Requirements
+
+* DOSBox -- [0.74.3][dosbox-download] is known to work
+* [NASM][nasm] -- [2.14.02][nasm-download] is known to work
+* (Recommended) A debug-enabled build of DOSBox (download [here][dosbox-debug])
+
+## Building
+
+NASM for any platform will work to build the assembly into a .COM file
+that can be run in DOSBox. This includes the DOS build of NASM, which
+was used while building this tool.
+
+From the root of the project, run this command:
+
+    NASM SOURCE\MAIN.ASM -ISOURCE -fbin -O0 -o BIN\DLEREG.COM
+
+As a convenience, `BUILD.BAT` is included to build the tool from a
+DOSBox session.
+
+## Debugging
+
+In a debug-enabled build of DOSBox, run
+
+    DEBUG BIN\DLEREG.COM
+
+Or just run `DEBUG.BAT`, which assumes that NASM is in the system path.
+
+This is a pretty raw debugging session. There are no symbols or links to
+the source. Just pure assembly.
+
 ## Call Convention
 
 The original DLE code was written in Turbo Pascal and thus was compiled
-to use the [pascal][1] calling convention.
+to use the [pascal][x86cc-pascal] calling convention.
 
 Since this project is pure assembly that doesn't interface with any
 external APIs, it's free to use any convention. To that end, conventions
-are helpful for consistency and it uses the [cdecl][2] convention.
+are helpful for consistency and it uses the [cdecl][x86cc-cdecl]
+convention.
 
 In summary:
 
@@ -90,5 +121,9 @@ memcpy:
     ret
 ```
 
-[1]: https://en.wikipedia.org/wiki/X86_calling_conventions#pascal
-[2]: https://en.wikipedia.org/wiki/X86_calling_conventions#cdecl
+[dosbox-download]: <https://www.dosbox.com/download.php?main=1> (Download DOSBox)
+[dosbox-debug]: <https://www.vogons.org/viewtopic.php?t=7323> (Download DOSBox Debug Build)
+[nasm]: <https://www.nasm.us/> (Netwide Assembler)
+[nasm-download]: <https://www.nasm.us/pub/nasm/releasebuilds/2.14.02/> (Download NASM)
+[x86cc-pascal]: <https://en.wikipedia.org/wiki/X86_calling_conventions#pascal> (Pascal Calling Convention)
+[x86cc-cdecl]: <https://en.wikipedia.org/wiki/X86_calling_conventions#cdecl> (CDECL Calling Convention)

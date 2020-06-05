@@ -23,6 +23,8 @@ not change, by changing the monster names and menus/screens/graphics, it
 could certainly set the game in a different era or genre, or simply give
 it a new flavour.
 
+This repository is at once code, archive, and blog post.
+
 ## History
 
 I was still in high school when I wrote this thing and very much wanted

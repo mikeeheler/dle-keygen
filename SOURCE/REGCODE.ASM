@@ -26,32 +26,36 @@ bbs_len     equ $-bbs
 sysop       db  'Really Cool Sysop'
 sysop_len   equ $-sysop
 
-hex         db  '0123456789ABCDEF'
-
+; For printed output
 sysop_name  db  'Sysop : $'
 bbs_name    db  'Bbs   : $'
 reg1        db  'Reg 1 : $'
 reg2        db  'Reg 2 : $'
 
-
-section .bss
-
-bbs_key     resb    0100h
-sysop_key   resb    0100h
-
+; For the hex string conversion
+hex         db  '0123456789ABCDEF'
 
 section .text
 
 main:
     push    bp
     mov     bp,sp
+    ; Reserve 2 strings on the stack
+    ; 1 byte for length and 256 bytes for content
+    sub     sp,0202h
 
-    push    sysop_key
+    ; locals: sysop_key [bp-0101h], bbs_key [bp-0202h]
+
+
+    lea     ax,[bp-0101h]
+    push    ax
     push    sysop
     push    sysop_len
     call    .gen_key
 
-    push    bbs_key
+
+    lea     ax,[bp-0202h]
+    push    ax
     push    bbs
     push    bbs_len
     call    .gen_key
@@ -78,31 +82,37 @@ main:
     push    reg1
     call    print_string
 
-    push    sysop_key
+    lea     ax,[bp-0101h]
+    push    ax
     call    .print_key
     call    print_newline
+
 
     push    reg2
     call    print_string
 
-    push    bbs_key
+    lea     ax,[bp-0202h]
+    push    ax
     call    .print_key
     call    print_newline
+
 
     mov     sp,bp
     pop     bp
     ret
 
 
+; Inputs:
+; bp+6 - input string
+; bp+4 - input string length
+;
+; Outputs:
+; bp+8 - output key in binary
 .gen_key:
-    ; Inputs:
-    ; bp+6 - input string
-    ; bp+4 - input string length
-    ;
-    ; Outputs:
-    ; bp+8 - output key in binary
     push    bp
     mov     bp,sp
+    push    di
+    push    si
 
     ; Seed the random number generator
     mov     ax,1935h
@@ -114,8 +124,10 @@ main:
     ; initialize the memory where we're writing the key, mostly for
     ; debugging.
     mov     di,[bp+8]
-    mov     ax,0xFEBE
-    mov     cx,0x80
+    mov     ax,0xBE00
+    stosw
+    mov     ax,0xBEEF
+    mov     cx,0x7F
     rep     stosw
 
     ; loop init
@@ -125,30 +137,28 @@ main:
     ; key length will be stored at index 0
     inc     di
 
-.loop:
+.gen_key.loop:
     push    cx
 
     ; Set the mask for the RNG. This causes it to return 0 <= N < 0xFF.
     mov     ax,00FFh
     push    ax
     call    rng_next_int
-    ; In a loop so restore the stack
-    add     sp,2
+    pop     dx
 
-    ; Add 1 to the range to make the value in the range of 1-255.
+    ; Add 1 to the range to put the value in the range of 1-255.
     inc     ax
-    ; Store it in AH
-    mov     ah,al
+    mov     ah,al               ; Store it in AH
 
-    ; Read a byte from the source string
+    ; Read an input byte, XOR the result with the RNG byte, and write it
+    ; to the output.
+    ; "Encryption," ladies and gentlemen.
     lodsb
-    ; XOR that byte with the byte we got from the RNG
     xor     al,ah
-    ; Store that in the result
     stosb
 
     pop     cx
-    loop    .loop
+    loop    .gen_key.loop
 
     ; Store result length in first byte
     mov     ax,di
@@ -158,23 +168,72 @@ main:
     xor     ah,ah
     stosb
 
+    pop     si
+    pop     di
     mov     sp,bp
     pop     bp
     ret
 
 
-.hex_to_string:
-    push    bp
-    mov     bp,sp
+.byte_to_ascii:
+    push    si
 
-    mov     sp,bp
-    pop     bp
+    xor     ch,ch
+    xor     dh,dh
+
+    mov     dl,al
+    and     dl,0xF0
+    shr     dl,4
+
+    mov     cl,al
+    and     cl,0x0F
+
+    mov     si,hex
+    add     si,dx
+    lodsb
+    mov     ah,al
+
+    mov     si,hex
+    add     si,cx
+    lodsb
+
+    xchg    ah,al
+
+    pop     si
     ret
 
 
 .print_key:
     push    bp
     mov     bp,sp
+    sub     sp,0201h
+
+    push    di
+    push    si
+
+    lea     ax,[bp-0201h]
+    mov     di,ax
+
+    mov     si,[bp+4]
+    lodsb
+    mov     cl,al
+    xor     ch,ch
+.print_key.loop:
+    push    cx
+
+    lodsb
+    call    .byte_to_ascii
+    mov     dx,ax
+    mov     ax,0200h
+    int     21h
+    xchg    dl,dh
+    int     21h
+
+    pop     cx
+    loop    .print_key.loop
+
+    pop     si
+    pop     di
 
     mov     sp,bp
     pop     bp

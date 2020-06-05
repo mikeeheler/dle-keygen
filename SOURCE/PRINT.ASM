@@ -1,21 +1,20 @@
 section .text
 
 print_string:
-    enter   0,0
+    mov     bx,sp
 
     mov     ax,0900h
-    mov     dx,[bp+4]
+    mov     dx,[bx+4]
     int     21h
 
-    leave
-    retn    2
+    ret
 
 
 print_string_2:
-    enter   0,0
+    mov     bx,sp
 
-    mov     cx,[bp+4]
-    mov     si,[bp+6]
+    mov     cx,[bx+4]
+    mov     si,[bx+6]
 
     mov     ah,02h
 
@@ -25,8 +24,7 @@ print_string_2:
     int     21h
     loop    .loop
 
-    leave
-    retn    4
+    ret
 
 
 print_newline:
@@ -38,4 +36,4 @@ print_newline:
     mov     dl,0Ah
     int     21h
 
-    retn
+    ret

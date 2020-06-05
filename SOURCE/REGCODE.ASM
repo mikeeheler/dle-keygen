@@ -47,41 +47,58 @@ main:
     push    sysop
     push    sysop_len
     call    .gen_key
+    sub     sp,6
 
     push    bbs_key
     push    bbs
     push    bbs_len
     call    .gen_key
+    sub     sp,6
+
 
     push    sysop_name
     call    print_string
+    sub     sp,2
+
     push    sysop
     push    sysop_len
     call    print_string_2
+    sub     sp,4
+
     call    print_newline
+
 
     push    bbs_name
     call    print_string
+    sub     sp,2
+
     push    bbs
     push    bbs_len
     call    print_string_2
+    sub     sp,4
+
     call    print_newline
+
 
     push    reg1
     call    print_string
+    sub     sp,2
+
+    push    sysop_key
+    call    .print_key
+    sub     sp,2
     call    print_newline
 
     push    reg2
     call    print_string
-    call    print_newline
-
-    push    sysop_key
-    call    .print_key
+    sub     sp,2
 
     push    bbs_key
     call    .print_key
+    sub     sp,2
+    call    print_newline
 
-    retn
+    ret
 
 
 .gen_key:
@@ -91,7 +108,9 @@ main:
     ;
     ; Outputs:
     ; bp+8 - output key in binary (zero-terminated)
-    enter   0,0
+    push    bp
+    mov     bp,sp
+    sub     sp,0100h
 
     ; Seed the random number generator
     mov     ax,1935h
@@ -99,6 +118,7 @@ main:
     push    ax
     push    dx
     call    rng_seed
+    sub     sp,4
 
     ; initialize the memory where we're writing the key, mostly for
     ; debugging.
@@ -121,6 +141,7 @@ main:
     mov     ax,00FFh
     push    ax
     call    rng_next_int
+    sub     sp,2
     ; Add 1 to the range to make the value in the range of 1-255.
     inc     ax
     ; Store it in AH
@@ -143,12 +164,21 @@ main:
     xor     ah,ah
     stosb
 
-    leave
-    retn    6
+    pop     bp
+    ret
+
+
+.hex_to_string:
+    push    bp
+    mov     bp,sp
+
+    pop     bp
+
 
 
 .print_key:
-    enter   0,0
+    push    bp
+    mov     bp,sp
 
-    leave
-    retn    2
+    pop     bp
+    ret

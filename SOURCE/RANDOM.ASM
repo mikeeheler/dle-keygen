@@ -32,13 +32,14 @@ rng_seed:
     mov     ax,[bx+2]
     mov     [rng_seed_2],ax
 
-    retn    4
+    ret
 
 
 ; 1 input param: upper bound
 ; The returned value will be less than the number passed in.
 rng_next_int:
-    enter   0,0
+    push    bp
+    mov     bp,sp
 
     call    rng_next_seed
 
@@ -51,8 +52,8 @@ rng_next_int:
     adc     dx,0
     mov     ax,dx
 
-    leave
-    retn    2
+    pop     bp
+    ret
 
 
 ; This here is why it's called a pseudo-random number generator.
@@ -75,7 +76,7 @@ rng_next_seed:
     adc     dx,0
     mov     [rng_seed_1],ax
     mov     [rng_seed_2],dx
-    retn
+    ret
 
 
 section .bss

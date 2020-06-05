@@ -25,13 +25,15 @@ section .text
 
 ; Set a specific seed for the RNG
 rng_seed:
-    mov     bx,sp
+    push    bp
+    mov     bp,sp
 
-    mov     ax,[bx+4]
+    mov     ax,[bp+4]
     mov     [rng_seed_1],ax
-    mov     ax,[bx+2]
+    mov     ax,[bp+2]
     mov     [rng_seed_2],ax
 
+    pop     bp
     ret
 
 
@@ -41,7 +43,7 @@ rng_next_int:
     push    bp
     mov     bp,sp
 
-    call    rng_next_seed
+    call    .rng_next_seed
     mov     cx,dx
     mul     word [bp+4]
     mov     ax,cx
@@ -58,7 +60,7 @@ rng_next_int:
 
 ; This here is why it's called a pseudo-random number generator.
 ; There's nothing random about this at all.
-rng_next_seed:
+.rng_next_seed:
     mov     ax,[rng_seed_1]
     mov     bx,[rng_seed_2]
     mov     cx,ax

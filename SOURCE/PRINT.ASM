@@ -1,20 +1,24 @@
 section .text
 
 print_string:
-    mov     bx,sp
+    push    bp
+    mov     bp,sp
 
     mov     ax,0900h
-    mov     dx,[bx+2]
+    mov     dx,[bp+2]
     int     21h
 
+    pop     bp
     ret
 
 
 print_string_2:
-    mov     bx,sp
+    push    bp
+    mov     bp,sp
+    push    si
 
-    mov     cx,[bx+2]
-    mov     si,[bx+4]
+    mov     cx,[bp+2]
+    mov     si,[bp+4]
 
     mov     ah,02h
 
@@ -24,6 +28,8 @@ print_string_2:
     int     21h
     loop    .loop
 
+    pop     si
+    pop     bp
     ret
 
 

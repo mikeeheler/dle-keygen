@@ -16,6 +16,9 @@ In summary:
 * Callee must preserve all registers except AX, CX, and DX.
 * Ordinal values can be returned in AL, AX, or DX:AX.
 * All arguments are pushed onto the stack.
+* The caller cleans up the stack.
+  * The caller's only real obligation here is to restore SP before
+    returning-- not necessarily after every call.
 * Argument push order is meaningless in pure assembly. Just put stuff on
   the stack where the called function expects them.
 

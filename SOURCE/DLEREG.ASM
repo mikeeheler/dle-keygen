@@ -8,13 +8,14 @@ org     0100h                   ; Tell NASM where COM code is loaded
 section .text
 
 _start:
-    call    main
+    call    dlereg_main
     mov     ax,4C00h
     int     21h
 
 
-%include 'RANDOM.ASM'
-%include 'PRINT.ASM'
+%include 'COMMON\\BYTE2ASC.ASM'
+%include 'COMMON\\RANDOM.ASM'
+%include 'COMMON\\PRINT.ASM'
 
 
 section .data
@@ -25,12 +26,10 @@ bbs_name    db  'Bbs   : $'
 reg1        db  'Reg 1 : $'
 reg2        db  'Reg 2 : $'
 
-; For the hex string conversion
-hex         db  '0123456789ABCDEF'
 
 section .text
 
-main:
+dlereg_main:
     push    bp
     mov     bp,sp
 
@@ -213,37 +212,6 @@ gen_key:
     ret
 
 
-; Converts a byte into a 2-byte ASCII representation
-; i.e. 0xCD -> "CD"
-; Result is returned in AX with the high 4 bits represented in AL and
-; the low 4 bits in AH. This is so that they can be written in order
-; to a memory stream with `stosw` (assumes little-endian byte order).
-byte_to_ascii:
-    push    si
-
-    xor     ch,ch
-    xor     dh,dh
-
-    mov     dl,al
-    and     dl,0xF0
-    shr     dl,4
-
-    mov     cl,al
-    and     cl,0x0F
-
-    mov     si,hex
-    add     si,dx
-    lodsb
-    mov     ah,al
-
-    mov     si,hex
-    add     si,cx
-    lodsb
-
-    xchg    ah,al
-
-    pop     si
-    ret
 
 
 ; Takes a binary key as input, converts it to ASCII, and prints to the

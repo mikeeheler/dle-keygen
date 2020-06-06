@@ -32,7 +32,16 @@ Or just run `DEBUG.BAT`, which assumes that NASM is in the system path.
 This is a pretty raw debugging session. There are no symbols or links to
 the source. Just pure assembly.
 
-## Call Convention
+## Conventions
+
+### Strings
+
+None of the data in this thing is expected to exceed 255 bytes, so
+strings use the pascal convention: a single byte at the front stores
+the string length, following by the characters (assumed to map to code
+page 437).
+
+### Function Calls
 
 The original DLE code was written in Turbo Pascal and thus was compiled
 to use the [pascal][x86cc-pascal] calling convention.

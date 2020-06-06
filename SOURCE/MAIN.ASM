@@ -19,13 +19,6 @@ _start:
 
 section .data
 
-; These are the default values from when DLE's SETUP.EXE is first run.
-bbs         db  'Even Cooler Bbs'
-bbs_len     equ $-bbs
-
-sysop       db  'Really Cool Sysop'
-sysop_len   equ $-sysop
-
 ; For printed output
 sysop_name  db  'Sysop : $'
 bbs_name    db  'Bbs   : $'
@@ -40,62 +33,115 @@ section .text
 main:
     push    bp
     mov     bp,sp
-    ; Reserve 2 strings on the stack
-    ; 1 byte for length and 256 bytes for content
-    sub     sp,0202h
 
-    ; locals: sysop_key [bp-0101h], bbs_key [bp-0202h]
+    ; allocate local stack space (384 bytes)
+    ; sp-128 - key input buffer (128 bytes)
+    ; sp-256 - reg code 1 (128 bytes)
+    ; sp-384 - reg code 2 (128 bytes)
+    sub     sp,0180h
+    push    bx
 
-
-    lea     ax,[bp-0101h]
-    push    ax
-    push    sysop
-    push    sysop_len
-    call    .gen_key
-
-
-    lea     ax,[bp-0202h]
-    push    ax
-    push    bbs
-    push    bbs_len
-    call    .gen_key
-
-
+.read_sysop:
     push    sysop_name
     call    print_string
 
-    push    sysop
-    push    sysop_len
-    call    print_string_2
+    lea     ax,[bp-0080h]
+    push    ax
+    call    read_key_input
     call    print_newline
+    add     sp,4
 
+    cmp     byte [bp-0080h],0
+    je      .read_sysop
 
+    lea     dx,[bp-0100h]
+    lea     bx,[bp-0080h]
+    push    dx
+    push    bx
+    call    gen_key
+    add     sp,4
+
+.read_bbs:
     push    bbs_name
     call    print_string
 
-    push    bbs
-    push    bbs_len
-    call    print_string_2
+    lea     ax,[bp-0080h]
+    push    ax
+    call    read_key_input
     call    print_newline
+    add     sp,4
+
+    cmp     byte [bp-0080h],0
+    je      .read_bbs
+
+    lea     dx,[bp-0180h]
+    lea     bx,[bp-0080h]
+    push    dx
+    push    bx
+    call    gen_key
+    add     sp,4
 
 
     push    reg1
     call    print_string
 
-    lea     ax,[bp-0101h]
+    lea     ax,[bp-0100h]
     push    ax
-    call    .print_key
+    call    print_key
     call    print_newline
 
 
     push    reg2
     call    print_string
 
-    lea     ax,[bp-0202h]
+    lea     ax,[bp-0180h]
     push    ax
-    call    .print_key
+    call    print_key
     call    print_newline
 
+    add     sp,8
+
+
+    pop     bx
+    mov     sp,bp
+    pop     bp
+    ret
+
+
+; Read up to 7F characters from stdin
+; Result will be stored at the pointer from the stack
+read_key_input:
+    push    bp
+    mov     bp,sp
+    sub     sp,082h
+
+    push    bx
+    push    di
+    push    si
+
+    lea     bx,[bp-082h]
+    mov     byte [bx],080h
+
+    ; int 21h/AX=0Ch buffered input
+    ; result at [bp-0100]
+    ; [0] = max characters
+    ; [1] = number of characters input
+    ; [2] = the characters read from the buffer
+    mov     ax,0C0Ah
+    mov     dx,bx
+    int     21h
+
+    mov     di,[bp+4]
+    lea     si,[bp-081h]
+    lodsb
+    mov     cl,al
+    stosb
+    xor     ch,ch
+    rep     movsb
+
+    pop     si
+    pop     di
+    pop     bx
 
     mov     sp,bp
     pop     bp
@@ -103,12 +149,11 @@ main:
 
 
 ; Inputs:
-; bp+6 - input string
-; bp+4 - input string length
+; bp+4 - input string
 ;
 ; Outputs:
-; bp+8 - output key in binary
-.gen_key:
+; bp+6 - output key in binary
+gen_key:
     push    bp
     mov     bp,sp
     push    di
@@ -121,23 +166,16 @@ main:
     push    dx
     call    rng_seed
 
-    ; initialize the memory where we're writing the key, mostly for
-    ; debugging.
-    mov     di,[bp+8]
-    mov     ax,0xBE00
-    stosw
-    mov     ax,0xBEEF
-    mov     cx,0x7F
-    rep     stosw
-
     ; loop init
-    mov     cx,[bp+4]
-    mov     si,[bp+6]
-    mov     di,[bp+8]
+    mov     di,[bp+6]
+    mov     si,[bp+4]
+    lodsb
+    mov     cl,al
+    xor     ch,ch
     ; key length will be stored at index 0
     inc     di
 
-.gen_key.loop:
+.loop:
     push    cx
 
     ; Set the mask for the RNG. This causes it to return 0 <= N < 0xFF.
@@ -158,11 +196,11 @@ main:
     stosb
 
     pop     cx
-    loop    .gen_key.loop
+    loop    .loop
 
     ; Store result length in first byte
     mov     ax,di
-    mov     di,[bp+8]
+    mov     di,[bp+6]
     sub     ax,di
     dec     ax
     xor     ah,ah
@@ -175,7 +213,12 @@ main:
     ret
 
 
-.byte_to_ascii:
+; Converts a byte into a 2-byte ASCII representation
+; i.e. 0xCD -> "CD"
+; Result is returned in AX with the high 4 bits represented in AL and
+; the low 4 bits in AH. This is so that they can be written in order
+; to a memory stream with `stosw` (assumes little-endian byte order).
+byte_to_ascii:
     push    si
 
     xor     ch,ch
@@ -203,37 +246,57 @@ main:
     ret
 
 
-.print_key:
+; Takes a binary key as input, converts it to ASCII, and prints to the
+; standard output stream (STDOUT).
+;
+; Binary keys are stored with their length in the first byte and the
+; rest in the subsequent bytes, much as strings except the data is
+; binary and not encoded characters.
+;
+; This routine makes use of byte_to_ascii to convert each input byte to
+; a 2-byte ASCII pair, which is then saved into the local stack. Once
+; the conversion is complete, an ASCII '$' (0x24) is appended so that
+; DOS int 21h/AH=09h will print it as a complete string to the output
+; stream.
+print_key:
     push    bp
     mov     bp,sp
-    sub     sp,0201h
+    sub     sp,00FFh
 
+    push    bx
     push    di
     push    si
 
-    lea     ax,[bp-0201h]
-    mov     di,ax
+    xor     ch,ch
 
+    lea     bx,[bp-00FFh]
+    mov     di,bx
+
+    ; Grab the input length
     mov     si,[bp+4]
     lodsb
     mov     cl,al
-    xor     ch,ch
-.print_key.loop:
+
+.loop:
     push    cx
 
     lodsb
-    call    .byte_to_ascii
-    mov     dx,ax
-    mov     ax,0200h
-    int     21h
-    xchg    dl,dh
-    int     21h
+    call    byte_to_ascii
+    stosw
 
     pop     cx
-    loop    .print_key.loop
+    loop    .loop
+
+    mov     al,24h
+    stosb
+
+    mov     ax,0900h
+    lea     dx,[bp-00FFh]
+    int     21h
 
     pop     si
     pop     di
+    pop     bx
 
     mov     sp,bp
     pop     bp

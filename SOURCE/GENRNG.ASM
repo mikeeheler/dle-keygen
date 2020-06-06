@@ -10,33 +10,22 @@ cpu     286
 global  _start
 org     0100h
 
-
 %define COUNT 8000h
-
 
 section .text
 
 _start:
-    call    genrng_main
-    mov     ax,4C00h
-    int     21h
-
-genrng_main:
     push    bp
     mov     bp,sp
-    sub     sp,COUNT+2
-
-    push    di
+    sub     sp,2
 
     push    1935h
     push    0
     call    rng_seed
     add     sp,4
 
-    lea     di,[bp-COUNT]
     mov     cx,COUNT
-
-    mov     word [bp-COUNT-2],0
+    mov     word [bp-2],0
 
 .loop:
     push    cx
@@ -44,7 +33,6 @@ genrng_main:
     push    00FFh
     call    rng_next_int
     inc     ax
-    stosb
     pop     dx
 
     call    byte_to_ascii
@@ -57,15 +45,15 @@ genrng_main:
     mov     dl,0x20
     int     21h
 
-    inc     word [bp-COUNT-2]
-    cmp     word [bp-COUNT-2],16
+    inc     word [bp-2]
+    cmp     word [bp-2],16
     jne     .no_newline
 
     mov     dl,0x0D
     int     21h
     mov     dl,0x0A
     int     21h
-    mov     word [bp-COUNT-2],0
+    mov     word [bp-2],0
 
 .no_newline:
     pop     cx
@@ -76,7 +64,9 @@ genrng_main:
 
     mov     sp,bp
     pop     bp
-    ret
+
+    mov     ax,4C00h
+    int     21h
 
 
 %include 'COMMON\BYTE2ASC.ASM'

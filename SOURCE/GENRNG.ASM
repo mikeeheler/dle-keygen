@@ -1,8 +1,12 @@
-; This tool generates a table containing the first 256 results from the
-; random number generator given the input seed 0x1935.
+; This tool generates a table containing the first COUNT numbers from
+; the random number generator given the input seed 0x1935.
+;
+; The numbers output are in the range of 0x01-0xFF, inclusive.
 ;
 ; That table can be used to port the key generator to other platforms
 ; not dependent on the characteristics of 16-bit math.
+;
+; Adjust the COUNT define below to generate more or fewer numbers.
 ;
 
 bits    16

@@ -13,3 +13,15 @@ Registration code for the default values of "Really Cool Sysop" and "Even Cooler
 ## DLE.CFG
 
 A drop-in pre-registered DLE.CFG registered to "Really Cool Sysop".
+
+## DLEREG.COM
+
+A compiled version of the registration code generator tool.
+
+## GENRNG.COM
+
+Outputs the first 32,768 "random" numbers from the RNG.
+
+## RNGTABLE.TXT
+
+A text dump of the first 32,768 "random" numbers from the RNG.

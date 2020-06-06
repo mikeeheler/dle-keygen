@@ -4,20 +4,6 @@ global  _start
 org     0100h                   ; Tell NASM where COM code is loaded
 
 
-; Entrypoint stub. This needs to be the first code in the file.
-section .text
-
-_start:
-    call    dlereg_main
-    mov     ax,4C00h
-    int     21h
-
-
-%include 'COMMON\BYTE2ASC.ASM'
-%include 'COMMON\RANDOM.ASM'
-%include 'COMMON\PRINT.ASM'
-
-
 section .data
 
 ; For printed output
@@ -27,7 +13,14 @@ reg1        db  'Reg 1 : $'
 reg2        db  'Reg 2 : $'
 
 
+; Entrypoint stub. This needs to be the first code in the file.
 section .text
+
+_start:
+    call    dlereg_main
+    mov     ax,4C00h
+    int     21h
+
 
 dlereg_main:
     push    bp
@@ -209,8 +202,6 @@ gen_key:
     ret
 
 
-
-
 ; Takes a binary key as input, converts it to ASCII, and prints to the
 ; standard output stream (STDOUT).
 ;
@@ -266,3 +257,8 @@ print_key:
     mov     sp,bp
     pop     bp
     ret
+
+
+%include 'COMMON\BYTE2ASC.ASM'
+%include 'COMMON\RANDOM.ASM'
+%include 'COMMON\PRINT.ASM'

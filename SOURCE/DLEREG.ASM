@@ -13,9 +13,9 @@ _start:
     int     21h
 
 
-%include 'COMMON\\BYTE2ASC.ASM'
-%include 'COMMON\\RANDOM.ASM'
-%include 'COMMON\\PRINT.ASM'
+%include 'COMMON\BYTE2ASC.ASM'
+%include 'COMMON\RANDOM.ASM'
+%include 'COMMON\PRINT.ASM'
 
 
 section .data
@@ -159,10 +159,8 @@ gen_key:
     push    si
 
     ; Seed the random number generator
-    mov     ax,1935h
-    mov     dx,0
-    push    ax
-    push    dx
+    push    1935h
+    push    0
     call    rng_seed
 
     ; loop init
@@ -178,8 +176,7 @@ gen_key:
     push    cx
 
     ; Set the mask for the RNG. This causes it to return 0 <= N < 0xFF.
-    mov     ax,00FFh
-    push    ax
+    push    00FFh
     call    rng_next_int
     pop     dx
 

@@ -3,6 +3,16 @@
 This program can generate registration codes for the Deluxe LORD Editor
 (DLE), a 16-bit DOS program I wrote in 1995.
 
+Since the source was lost, I have taken it upon myself to hack the
+registration key algorithm and now provide keys freely to all those who
+wish to have them.
+
+Create keys for yourself at https://mikeeheler.github.io/dle-keygen/.
+
+Read on for information about the program and the process of hacking it.
+
+## About DLE
+
 The Deluxe LORD Editor is a tool useful for SysOps running LORD
 (Legend of the Red Dragon) on their BBS'. It's an editor and management
 tool all-in-one, with several modules:
@@ -23,7 +33,8 @@ not change, by changing the monster names and menus/screens/graphics, it
 could certainly set the game in a different era or genre, or simply give
 it a new flavour.
 
-This repository is at once code, archive, and blog post.
+This repository is at once code, archive, blog post, and online key
+generator.
 
 ## History
 
@@ -34,12 +45,12 @@ features unless the program was unlocked with a code.
 Give me $5 and I'll send you a code. I made a grand total of about $15
 from that scheme.
 
-25 years later, the SysOp of Danger Bay BBS, who goes by nIGHt rIDer,
+25 years later, the SysOp of Danger Bay BBS, who goes by Night Rider,
 reached out to me to ask if I was still able to generate codes for the
 program.
 
-Yes, there is still very much a BBS scene out there in 2020, and I
-could not be happier to have learned about it.
+Yes, there is still very much a BBS scene out there in 2020, and I could
+not be happier to have learned about it.
 
 The source to DLE is long lost, but I saw a puzzle ready to be solved;
 I would hack the damn thing myself.
@@ -97,7 +108,14 @@ is registered and all the annoyware is disabled.
 
 The key to this whole thing, really, is the random number generator.
 See [RANDOM.ASM](SOURCE/RANDOM.ASM). I don't know what algorithm it
-uses.
+uses, but it seems to depend somewhat on how 16-bit x86 instructions
+handle math on 32-bit numbers.
+
+Given this, the online generator uses a [lookup table][lookup-table]
+which was generated from the ASM-based RNG. I pre-generated 32,768
+values given the input seed of 0x1935, which is way more than will ever
+be needed given that the input fields (sysop and bbs name) were limited
+to 127 bytes, and the registration codes 254.
 
 ## "Hacking Protection"
 
@@ -136,23 +154,6 @@ would run in.
 
 ## Future Work
 
-Right now the only way to get a reg key out of this thing is to open it
-in the DOSbox debugger, set a breakpoint on the return from `start`, and
-copy the data from the memory display. That data will still be in byte
-form (i.e. `0x34 0x57 0xA5 0x18 0x83`) so it needs to be written down by
-hand in string form (`"3457A51883"`).
+I want to make the website look like a 90s BBS.
 
-So, next steps might be to do that string conversion and print it out,
-and maybe read the SysOp/BBS name from the console or DLE.CFG.
-
-It could also write the codes directly into DLE.CFG.
-
-As I pour more code into it -- I/O, screen printing, other things -- I'd
-like to organize the code into more files and thus might look into
-targeting an EXE instead. I've read that it _can_ be done by hand-coding
-the EXE header in the .data section but it makes more sense to me to
-just generate a Makefile and link it with GCC or something like that. I
-would like to find a linker that generates original DOS headers though.
-DLE.EXE's metadata header is just 28 bytes followed by a rather large
-(relatively speaking) relocation table. Modern linkers, I think, are
-more likely to generate larger headers and I'd like to avoid that.
+[lookup-table]: FILES/RNGTABLE.TXT

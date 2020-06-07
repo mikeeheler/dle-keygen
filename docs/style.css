@@ -1,0 +1,38 @@
+@font-face {
+    font-family: 'IBMVGA9';
+    src: url('Px437_IBM_VGA9.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+body {
+    background-color: black;
+    color: #aaa;
+    font-family: 'IBMVGA9';
+    font-size: 16px;
+}
+button {
+    background: black;
+    border: 1px solid green;
+    color: white;
+}
+input {
+    background: black;
+    border: 1px solid green;
+    color: #FFF;
+    line-height: 16px;
+    padding-left: 5px;
+    width: 100%;
+}
+pre {
+    color: white;
+}
+a,a:hover {
+    color: #51fffd;
+}
+.attribution {
+    color: #555;
+    border-top: 1px solid #3333;
+}
+.title {
+    color: white;
+}

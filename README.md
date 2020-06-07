@@ -159,8 +159,4 @@ during development. It produced identical output using the 64-bit NASM
 for Win32 but it just felt more correct to compile it in the same
 context that the program would run in.
 
-## Future Work
-
-I want to make the website look like a 90s BBS.
-
 [lookup-table]: FILES/RNGTABLE.TXT

@@ -66,10 +66,10 @@ and, ultimately, the registration code validation. It was glorious.
 ## "Encryption"
 
 My 16-year-old self thought he was pretty clever to come up with this.
-I remember challenging a friend who said he knew a guy that could hack
-anything to ask that guy to hack it.
+(Narrator: He wasn't.) I remember challenging a friend who said he knew
+a guy that could hack anything to ask that guy to hack it.
 
-They never took me up on it. I think they were scared.
+They never took me up on it. I think they were scared. Clearly.
 
 The registration codes are strings of hex characters that basically
 map to the SysOp and BBS Name fields one-to-one. For each character
@@ -83,7 +83,7 @@ The algorithm to generate a code goes like this:
 
 Then, for each character in the SysOp or BBS Name field:
 
-* Pull a psuedo-random value from the RNG with a max value of 0xfe.
+* Pull a psuedo-random value less than 255 from the RNG.
 * Add 1.
 * XOR it with the input character.
 * Convert that value to a 2-character hex string (i.e. 0xAA -> "AA").
@@ -97,7 +97,7 @@ decoding the code is basically the same process:
 Then for every two characters in the code:
 
 * Convert the hex string to its numeric value (i.e. "AA" -> 0xAA).
-* Pull a pseudo-random value from the RNG with a max value of 0xfe.
+* Pull a psuedo-random value less than 255 from the RNG.
 * Add 1.
 * XOR it with the number to make a byte.
 * Add that byte to a string.
@@ -130,6 +130,12 @@ Instead, I set a variable to a magic value:
 
 I do not know the significance of these numbers, if any.
 
+I was tempted to just edit the DLE.EXE binary to ensure the checksums
+were always set to the _registered_ value, but as I thought about it, I
+knew that I wanted to keep that exe intact. It was built on January
+22nd, 1996 at 06:51:44 and there it has sat, unmodified. It didn't feel
+right to change it now.
+
 ## Learnings
 
 Going in I had only written or even debugged a minimal amount of
@@ -145,12 +151,13 @@ It's one thing to step through existing code and make sense of it (with
 the Intel x86 Architecture Guide in hand), and another thing entirely to
 write code that executes. I'm still very much learning how to write NASM
 code, and most of what I've written just looks like the machine code I
-was stepping through.
+was stepping through. I'm now inspired to write some larger apps in pure
+286-era assembly just to try my hand at it.
 
-For kicks, I compiled the REGCODE program with 16-bit NASM for DOS. It
-produced identical output using the 64-bit NASM for Win32 but it just
-felt more correct to compile it in the same context that the program
-would run in.
+For kicks, I compiled the REGCODE program with 16-bit NASM for DOS
+during development. It produced identical output using the 64-bit NASM
+for Win32 but it just felt more correct to compile it in the same
+context that the program would run in.
 
 ## Future Work
 

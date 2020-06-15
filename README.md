@@ -107,15 +107,13 @@ Once that's done, compare the resulting string to either the SysOp name
 is registered and all the annoyware is disabled.
 
 The key to this whole thing, really, is the random number generator.
-See [RANDOM.ASM](SOURCE/RANDOM.ASM). I don't know what algorithm it
-uses, but it seems to depend somewhat on how 16-bit x86 instructions
+See [RANDOM.ASM][random-asm-source]. I don't know what algorithm
+it uses, but it seems to depend somewhat on how 16-bit x86 instructions
 handle math on 32-bit numbers.
 
-Given this, the online generator uses a [lookup table][lookup-table]
-which was generated from the ASM-based RNG. I pre-generated 32,768
-values given the input seed of 0x1935, which is way more than will ever
-be needed given that the input fields (sysop and bbs name) were limited
-to 127 bytes, and the registration codes 254.
+I couldn't be arsed to convert the RNG into Javascript so the online
+generator uses a [lookup table][lookup-table] of pre-generated RNG
+values from the [GENRNG][genrng-asm-source] tool.
 
 ## "Hacking Protection"
 
@@ -160,3 +158,5 @@ for Win32 but it just felt more correct to compile it in the same
 context that the program would run in.
 
 [lookup-table]: FILES/RNGTABLE.TXT
+[random-asm-source]: SOURCE/COMMON/RANDOM.ASM
+[genrng-asm-source]: SOURCE/GENRNG.ASM

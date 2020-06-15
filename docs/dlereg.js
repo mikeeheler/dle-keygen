@@ -16,7 +16,7 @@ function getCode(inputValue) {
         let code = inputValue.charCodeAt(i);
         let encoded = code ^ rngTable[i];
         let hex = encoded.toString(16);
-        if (hex.length < 2) { hex = "0" + hex }
+        while (hex.length < 2) { hex = "0" + hex }
         result += hex;
     }
     return result.toUpperCase();
